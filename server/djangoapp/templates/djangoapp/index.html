@@ -12,39 +12,75 @@
     <script src="https://unpkg.com/bootstrap-table@1.18.2/dist/extensions/filter-control/bootstrap-table-filter-control.min.js"></script>
 
 </head>
-
+{% if message %}
+    <script>
+        alert('{{ message }}');
+    </script>
+{%endif%}
     <body>
-    <!-- Remove this line the first time you edit this file -->
-    <center><h1>Best Car DealerShip Website</h1></center>
     <!--Add a nav bar here -->
-    <nav class="navbar navbar-expand-lg navbar-light bg-light">
-        <div class="container">
-            <a class="navbar-brand" href="#">Car Dealership</a>
-            <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
-                <span class="navbar-toggler-icon"></span>
-            </button>
-            <div class="collapse navbar-collapse" id="navbarNav">
-                <ul class="navbar-nav ml-auto">
-                    <li class="nav-item">
-                        <a class="nav-link" href="/djangoapp/index">Home</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="/djangoapp/about">About</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="#">Services</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="/djangoapp/contact">Contact</a>
-                    </li>
-                </ul>
-            </div>
+    <nav class="navbar navbar-light bg-dark">
+    <div class="container-fluid">
+        <div class="navbar-header">
+              <a class="navbar-brand text-white" href="#">Dealership Review</a>
         </div>
-    </nav>
-
+              <ul class="nav navbar-nav navbar-right">
+                {% if user.is_authenticated %}
+                <li>
+                    <a class="btn btn-link text-white" href="#">Hy, Welcome, {{ user.first_name }}({{ user.username }})</a>
+                    <a class="btn btn-link text-white" href="{% url 'djangoapp:logout' %}">Logout</a>
+                </li>
+                {% else %}
+                <li>
+                    <form class="form-inline" action="{% url 'djangoapp:login' %}" method="post">
+                        {% csrf_token %}
+                        <div class="input-group">
+                            <input type="text" class="form-control" placeholder="Username" name="username" >
+                            <input type="password" class="form-control" placeholder="Password" name="psw" >
+                            <button class="btn btn-sm btn-outline-info" type="submit">Login</button>
+                            <a class="btn btn-link text-light" href="{% url 'djangoapp:registration' %}">Sign Up</a>
+                        </div>
+                    </form>
+                </li>
+                {% endif %}
+              </ul>
+    </div>
+</nav>
     <!--Add a dealer table here -->
 
+    <h2><center>Dealer's Table</center></h2>
+    <table style="width:50%">
+  <tr>
+    <th>Firstname</th>
+    <th>Lastname</th>
+    <th>Age</th>
+  </tr>
+  <tr>
+    <td>Jill</td>
+    <td>Smith</td>
+    <td>50</td>
+  </tr>
+  <tr>
+    <td>Eve</td>
+    <td>Jackson</td>
+    <td>94</td>
+  </tr>
+</table>
+{% if messages %}
+    <ul class="messages">
+        {% for message in messages %}
+            <li{% if message.tags %} class="{{ message.tags }}"{% endif %}>{{ message }}</li>
+        {% endfor %}
+    </ul>
+{% endif %}
+
+<footer class="navbar navbar-expand-md navbar-dark fixed-bottom bg-dark ">
+    <div class="container">
+      <a class="btn btn-sm btn-outline-info" type="button" href="{% url 'djangoapp:about' %}">About Us</a>
+      <a class="btn btn-sm btn-outline-info" type="button" href="{% url 'djangoapp:index' %}">Home</a>
+      <a class="btn btn-sm btn-outline-info" type="button" href="{% url 'djangoapp:contact' %}">Contact Us</a>
+    </div>
+  </footer>
     </body>
 
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.min.js"></script>
 </html>
