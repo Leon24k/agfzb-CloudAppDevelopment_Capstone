@@ -1,6 +1,7 @@
 import requests
 import json
 # import related models here
+from .models import CarDealer, DealerReview
 from requests.auth import HTTPBasicAuth
 
 # Define the base URLs from get-dealership.js and reviews.py
@@ -58,115 +59,59 @@ def get_dealers_from_cf(url, **kwargs):
     else:
         json_result = get_request(url)
 
-    print('json_result RESTAPIS', json_result)    
+    # print('json_result from line 31', json_result)    
 
     if json_result:
         # Get the row list in JSON as dealers
         dealers = json_result
-
         # For each dealer object
         for dealer in dealers:
             # Get its content in `doc` object
             dealer_doc = dealer
             # print(dealer_doc)
             # Create a CarDealer object with values in `doc` object
+            dealer_obj = CarDealer(address=dealer_doc["address"], city=dealer_doc["city"],
+                                   id=dealer_doc["id"], lat=dealer_doc["lat"], long=dealer_doc["long"], full_name=dealer_doc["full_name"],
+                                
+                                   st=dealer_doc["st"], zip=dealer_doc["zip"], short_name=dealer_doc["short_name"])
+            results.append(dealer_obj)
 
-    return results
-
-def get_dealer_by_id(dealer_id):
-    # Call get_request with the base URL for dealerships and dealerId parameter
-    url = REVIEWS_BASE_URL.format(dealer_id=dealer_id)
-    json_result = get_request(url)
-
-    results = []
-    if json_result and "docs" in json_result:
-        dealers = json_result["docs"]
-        for dealer in dealers:
-            # Create a CarDealer object with values in `dealer` dictionary
-    return results
-
-def get_dealers_by_state(state):
-    # Call get_request with the base URL for dealerships and state parameter
-    url = f"{DEALERSHIP_BASE_URL}?state={state}"
-    json_result = get_request(url)
-
-    results = []
-    if json_result and "docs" in json_result:
-        dealers = json_result["docs"]
-        for dealer in dealers:
-            # Create a CarDealer object with values in `dealer` dictionary
     return results
 
 # Create a get_dealer_reviews_from_cf method to get reviews by dealer id from a cloud function
 # def get_dealer_by_id_from_cf(url, dealerId):
 # - Call get_request() with specified arguments
 # - Parse JSON results into a DealerView object list
-def get_dealer_reviews_from_cf(dealer_id):
-    # Call get_request with the base URL for reviews and dealerId parameter
-    url = REVIEWS_BASE_URL.format(dealer_id=dealer_id)
-    # Pass the API key to the get_request function
-    api_key = "OkANvrZmn9NYhSIQNSO1z5lIlZ5c3ays3FsQDOBUdrhx"
-    json_result = get_request(url, api_key=api_key)
-
+def get_dealer_reviews_from_cf(url, dealer_id):
     results = []
+    # Call get_request with a URL parameter
+    json_result = get_request(url, dealerId=dealer_id)
     if json_result:
-        for review_data in json_result:
-            # Check if all required fields exist in review_data
-            if "id" in review_data and "dealership" in review_data and "review" in review_data \
-                    and "purchase" in review_data and "purchase_date" in review_data \
-                    and "car_make" in review_data and "car_model" in review_data and "car_year" in review_data:
-                # If all fields are available, create the DealerReview object
-                dealer_review = DealerReview(
-                    review_id=review_data["id"],
-                    dealer_id=review_data["dealership"],
-                    review=review_data["review"],
-                    purchase=review_data["purchase"],
-                    purchase_date=review_data["purchase_date"],
-                    car_make=review_data["car_make"],
-                    car_model=review_data["car_model"],
-                    car_year=review_data["car_year"],
-                    sentiment=None
-                )
-                results.append(dealer_review)
+        # Get the row list in JSON as dealers
+        reviews = json_result["data"]
+        review_docs = reviews["docs"]
+        for review_doc in review_docs: 
+            review_obj = DealerReview(
+                dealership=review_doc["dealership"],
+                name=review_doc["name"],
+                purchase=review_doc["purchase"],
+                review=review_doc["review"])
+            if "id" in review_doc:
+                review_obj.id = review_doc["id"]
+            if "purchase_date" in review_doc:
+                review_obj.purchase_date = review_doc["purchase_date"]
+            if "car_make" in review_doc:
+                review_obj.car_make = review_doc["car_make"]
+            if "car_model" in review_doc:
+                review_obj.car_model = review_doc["car_model"]
+            if "car_year" in review_doc:
+                review_obj.car_year = review_doc["car_year"]
+
+            results.append(review_obj)
 
     return results
-
 
 # Create an `analyze_review_sentiments` method to call Watson NLU and analyze text
 # def analyze_review_sentiments(text):
 # - Call get_request() with specified arguments
 # - Get the returned sentiment label such as Positive or Negative
-def analyze_review_sentiments(dealerreview):
-    # Define the URL for sentiment analysis
-    url = 'https://api.us-south.natural-language-understanding.watson.cloud.ibm.com/instances/ae38d3e7-7f76-412f-9ea3-da080c263c49'
-
-    # Debugging: Print the review text
-    print("Review Text:", dealerreview.review)
-    # Construct the parameters from the dealerreview object
-    params = {
-        "text": dealerreview.review,
-        "version": "2022-04-07",
-        "features": "sentiment",
-        "return_analyzed_text": True
-    }
-
-    # Your API key for Watson NLU
-    api_key = 'OkANvrZmn9NYhSIQNSO1z5lIlZ5c3ays3FsQDOBUdrhx'
-
-    try:
-        # Make the GET request to Watson NLU
-        response = get_request(url, api_key=api_key, **params)
-        
-        print("API Response:", response)  # Print the response for debugging
-
-        # Check if the response is successful
-        if "sentiment" in response:
-            sentiment = response["sentiment"]["document"]["label"]
-            print("Sentiment:", sentiment)  # Print the extracted sentiment for debugging
-            return sentiment
-        else:
-            return None
-    except Exception as e:
-        # Handle any exceptions here
-        print("Error analyzing sentiment:", str(e))
-        return None

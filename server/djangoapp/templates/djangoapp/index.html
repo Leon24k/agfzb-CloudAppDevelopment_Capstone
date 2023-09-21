@@ -68,10 +68,10 @@
                 </tr>
             </thead>
              <tbody>
-                {% for dealer in dealership_list %}
+                {% for dealer in dealerships %}
                     <tr>
-                        <td>{{dealer.dealer_id}}</td>
-                        <td><a href="{% url 'djangoapp:dealer_details' dealer.dealer_id %}">{{dealer.full_name}}</a></td>   
+                        <td><a href="{% url 'djangoapp:dealer_details' dealer.id %}">{{dealer.dealer_id}}</td>
+                        <td>{{dealer.full_name}}</a></td>   
                         <td>{{dealer.city}}</td>
                         <td>{{dealer.address}}</td>
                         <td>{{dealer.zip}}</td>
