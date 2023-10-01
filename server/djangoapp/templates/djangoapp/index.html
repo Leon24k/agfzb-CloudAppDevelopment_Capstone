@@ -70,7 +70,7 @@
              <tbody>
                 {% for dealer in dealerships %}
                     <tr>
-                        <td><a href="{% url 'djangoapp:dealer_details' dealer.id %}">{{dealer.dealer_id}}</td>
+                        <td>{{dealer.id}}</td>
                         <td>{{dealer.full_name}}</a></td>   
                         <td>{{dealer.city}}</td>
                         <td>{{dealer.address}}</td>
