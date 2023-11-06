@@ -16,14 +16,18 @@ def get_request(url, api_key=None, **kwargs):
     print(kwargs)
     print("GET from {} ".format(url))
     try:
-        # Create headers with the API key
-        headers = {
-            'Content-Type': 'application/json',
-            'Authorization': 'Basic {}'.format(api_key)
-        }
-        
-        # Call get method of requests library with URL, headers, and parameters
-        response = requests.get(url, headers=headers, params=kwargs)
+        if api_key:
+            params = dict()
+            params["text"] = kwargs["text"]
+            params["version"] = kwargs["version"]
+            params["features"] = kwargs["features"]
+            params["return_analyzed_text"] = kwargs["return_analyzed_text"]
+            response = requests.get(url, params=params, headers={'Content-Type': 'application/json'},
+                                    auth=HTTPBasicAuth('apikey', api_key))
+        else:
+            # Call get method of requests library with URL and parameters
+            response = requests.get(url, headers={'Content-Type': 'application/json'},
+                                    params=kwargs)
     except:
         # If any error occurs
         print("Network exception occurred")
@@ -107,6 +111,9 @@ def get_dealer_reviews_from_cf(url, dealer_id):
             if "car_year" in review_doc:
                 review_obj.car_year = review_doc["car_year"]
 
+            sentiment = analyze_review_sentiments(review_obj.review)
+            print(sentiment)
+            review_obj.sentiment = sentiment
             results.append(review_obj)
 
     return results

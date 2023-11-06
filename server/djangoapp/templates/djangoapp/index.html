@@ -67,11 +67,11 @@
                     <th data-field="state" data-filter-control="select">State</th>
                 </tr>
             </thead>
-             <tbody>
-                {% for dealer in dealerships %}
+            <tbody>
+                {% for dealer in dealership_list %}
                     <tr>
                         <td>{{dealer.id}}</td>
-                        <td>{{dealer.full_name}}</a></td>   
+                        <td><a href="{% url 'djangoapp:dealer_details' dealer.id %}">{{dealer.full_name}}</a></td>   
                         <td>{{dealer.city}}</td>
                         <td>{{dealer.address}}</td>
                         <td>{{dealer.zip}}</td>
